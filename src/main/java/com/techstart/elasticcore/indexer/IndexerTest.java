@@ -1,6 +1,5 @@
 package com.techstart.elasticcore.indexer;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -10,11 +9,11 @@ import org.springframework.stereotype.Service;
 public class IndexerTest {
 
 
-    @Autowired
-    private ElasticIndexer<OutletDTO> elasticIndexer;
+//    @Autowired
+    private ElasticGenericRepository<OutletDTO> elasticGenericRepository;
 
 
-    @Autowired
+//    @Autowired
     private OutletIndexer outletIndexer;
 
     public void createIndex(){
@@ -31,7 +30,7 @@ public class IndexerTest {
 //        lc.setCity("Bedok");
 //        lc.setCountry("SG");
 //        lc.setLocation("w21zmrea");
-        elasticIndexer.create(out);
+        elasticGenericRepository.create(out);
 
 
         OutletDTO dto = new OutletDTO();
@@ -44,7 +43,7 @@ public class IndexerTest {
 //        lc1.setLocation("w21zmrdhy");
         dto.setLocation(lc1);
 
-        String uid = elasticIndexer.create(dto);
+        OutletDTO uid = elasticGenericRepository.create(dto);
         System.out.println("end indexer .............................");
         System.out.println(uid);
 

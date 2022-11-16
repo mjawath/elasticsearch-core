@@ -1,14 +1,16 @@
 package com.techstart.elasticcore.indexer;
 
+import com.techstart.elasticcore.util.Meta;
+import com.techstart.elasticcore.util.ReflectionUtil;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -17,6 +19,8 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +28,13 @@ import java.util.stream.Collectors;
 /**
  * Created by jawa on 11/4/2020.
  */
-@Component//sort of repository
-public class ElasticIndexer<T> {
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class ElasticGenericRepository<T> {
+
+    @Autowired
+    private ElasticsearchOperations elasticsearchOperations;
+    private ElasticsearchRestTemplate restTemplate;
 
     private String index;
     private IndexCoordinates indexCoordinates;//=IndexCoordinates.of(index);
@@ -33,16 +42,11 @@ public class ElasticIndexer<T> {
 
     private static final int paginationSize = 20;
 
-    public ElasticIndexer() {
-        System.out.println("ElasticIndexer");
+    public ElasticGenericRepository() {
 //        ReflectionUtil.getParameterisedBusinessClass(this.getClass());
     }
 
-    @Autowired
-    private ElasticsearchOperations elasticsearchOperations;
-    private ElasticsearchRestTemplate restTemplate;
-
-    public String create(T dto) {
+    public <S extends T> S create(S dto) {
 
         System.out.println("create elastic");
         //elastic specific
@@ -51,7 +55,7 @@ public class ElasticIndexer<T> {
                 .withObject(dto)
                 .build();
         String documentId = elasticsearchOperations.index(indexQuery, indexCoordinates);
-        return documentId;
+        return dto;
     }
 
 
@@ -71,7 +75,7 @@ public class ElasticIndexer<T> {
         return ob;
     }
 
-    public List<T> findAll() {
+    public Iterable<T> findAll() {
         String filter =
                 "   {\n" +
                         "        \"match_all\": {}\n" +
@@ -132,7 +136,7 @@ public class ElasticIndexer<T> {
                 .withQuery(QueryBuilders.matchAllQuery())
                 .withFilter(new GeoDistanceQueryBuilder(fieldName)
                         .distance(distance, DistanceUnit.KILOMETERS).point(pin.getGeoPoint()))
-                .withSort(SortBuilders.geoDistanceSort(fieldName,pin.getGeoPoint()).order(SortOrder.ASC))
+                .withSort(SortBuilders.geoDistanceSort(fieldName, pin.getGeoPoint()).order(SortOrder.ASC))
                 .build();
 
 
@@ -168,4 +172,21 @@ public class ElasticIndexer<T> {
         this.aClass = aClass;
     }
 
+    //        @PostConstruct
+    protected void setIndexDetails() {
+        setIndexDetails(getClass());
+    }
+
+    protected void setIndexDetails(Class cls) {
+        final Class parameterisedBusinessClass = ReflectionUtil.getParameterisedBusinessClass(cls);
+        setaClass(parameterisedBusinessClass);
+
+
+        Annotation[] annotations = parameterisedBusinessClass.getDeclaredAnnotations();
+        if (annotations != null && annotations.length > 0 && annotations[0] != null) {
+            final Annotation annotation = annotations[0];
+            Meta meta = (Meta) annotation;
+            setIndex(meta.index());
+        }
+    }
 }

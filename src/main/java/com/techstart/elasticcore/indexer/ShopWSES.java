@@ -15,9 +15,9 @@ import java.util.List;
 /**
  * Created by jawa on 11/7/2020.
  */
-@RestController("ShopESController")
+//@RestController("ShopESController")
 @RequestMapping("/shops")
-public class ShopWSES extends RestWSController<OutletDTO> {
+public class ShopWSES extends RestSearchWSController<OutletDTO> {
 
     @Autowired
     private OutletIndexer indexer;

@@ -10,18 +10,16 @@ import java.util.List;
  * Created by jawa on 11/4/2020.
  */
 @Service
-public class OutletIndexer extends Indexer<OutletDTO> {
+public class OutletIndexer extends IndexerImpl<OutletDTO> {
 
     public List<OutletDTO> findOutletsNearby(LocationDTO pin,String range){
         logger.info(pin + range);
-        return elasticIndexer.findNearBy(pin,range);
+        return findNearBy(pin,range);
 
     }
 
-
-    @Autowired
-    protected void setElasticIndexer(ElasticIndexer elasticIndexer) {
-        super.setElasticIndexer(elasticIndexer);
-//        elasticIndexer.setIndex("shops");
+    private List<OutletDTO> findNearBy(LocationDTO pin, String range) {
+        return null;
     }
+
 }

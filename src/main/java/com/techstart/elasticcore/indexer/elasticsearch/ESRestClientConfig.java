@@ -14,7 +14,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 /**
  * Created by jawa on 11/4/2020.
  */
-@Configuration
+//@Configuration
 @Lazy
 public class ESRestClientConfig  extends AbstractElasticsearchConfiguration {
 
